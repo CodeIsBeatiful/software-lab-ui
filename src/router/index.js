@@ -43,13 +43,13 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/store',
+    path: '/app',
     component: Layout,
     children: [
       {
         path: 'index',
-        name: 'store',
-        component: () => import('@/views/store/index'),
+        name: 'app',
+        component: () => import('@/views/app/index'),
         meta: { title: '商店', icon: 'store' }
       }
     ]
