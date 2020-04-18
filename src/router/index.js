@@ -50,7 +50,19 @@ export const constantRoutes = [
         path: 'index',
         name: 'app',
         component: () => import('@/views/app/index'),
-        meta: { title: '商店', icon: 'store' }
+        meta: { title: '商店', icon: 'app' }
+      }
+    ]
+  },
+  {
+    path: '/fav',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'fav',
+        component: () => import('@/views/app/index'),
+        meta: { title: '收藏', icon: 'fav' }
       }
     ]
   },

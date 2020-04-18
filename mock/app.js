@@ -11,7 +11,8 @@ const data = Mock.mock({
     createTime: '@datetime',
     updateTime: '@datetime',
     additionalInfo: '{imageName:postgres:9.6}',
-    'isCollect|1': [true, false]
+    'isCollect|1': [true, false],
+    'logo|1': ['app/kafka.png', 'app/postgres.png']
   }]
 })
 
