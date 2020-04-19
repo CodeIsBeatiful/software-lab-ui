@@ -61,7 +61,7 @@ export const constantRoutes = [
       {
         path: 'index',
         name: 'fav',
-        component: () => import('@/views/app/index'),
+        component: () => import('@/views/fav/index'),
         meta: { title: '收藏', icon: 'fav' }
       }
     ]

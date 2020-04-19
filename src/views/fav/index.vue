@@ -1,9 +1,26 @@
 <template>
   <div class="store-container">
-
+    <el-row :gutter="20">
+      <el-col :span="3">
+        <el-select v-model="value" placeholder="类型" size="small">
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-col>
+      <el-col :span="3">
+        <el-input v-model="input" size="small" placeholder="关键字"></el-input>
+      </el-col>
+      <el-col :span="3">
+        <el-button type="primary" size="small" icon="el-icon-search">搜索</el-button>
+      </el-col>
+    </el-row>
     <el-row :gutter="20">
       <el-col :span="24">
-        <el-divider content-position="left">常用工具</el-divider>
+        <el-divider></el-divider>
       </el-col>
       <el-col v-for="app in list" :key="app.id" :span="6">
         <div class="grid-content bg-purple-light">
@@ -11,38 +28,18 @@
             <img :src="app.logo" style="width: 96px;height: 96px;margin: 5px; border-radius: 10px;" />
           </div>
           <div class="store-app-desc">
-            <p class="store-app-desc-p">{{ app.name }}</p>
+            <p class="store-app-desc-p">{{ app.name }}<el-tag type="success" size="small" class="store-app-tag">{{ app.type }}</el-tag></p>
             <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em;">{{ app.description | ellipsis }}</p>
             <p>
-              <el-button type="primary" size="small" :disabled="app.isCollect" @click="showDialog($event, app.id)">收藏</el-button>
-              <el-button icon="el-icon-star-off" size="small" plain>{{ app.stars }}</el-button>
-            </p>
-          </div>
-        </div>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20">
-      <el-col :span="24">
-        <el-divider content-position="left">数据库</el-divider>
-      </el-col>
-      <el-col v-for="app in list" :key="app.id" :span="6">
-        <div class="grid-content bg-purple-light">
-          <div class="store-app-logo">
-            <svg-icon icon-class="example" style="width: 96px;height: 96px;margin: 5px;" />
-          </div>
-          <div class="store-app-desc">
-            <p class="store-app-desc-p">{{ app.name }}</p>
-            <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em;">{{ app.description | ellipsis }}</p>
-            <p>
-              <el-button type="primary" size="small" :disabled="app.isCollect" @click="showDialog($event, app.id)">收藏</el-button>
-              <el-button icon="el-icon-star-off" size="small" plain>{{ app.stars }}</el-button>
+              <el-button type="primary"  size="small">运行</el-button>
+              <el-button size="small" plain @click="showDialog($event, app.id)">移除</el-button>
             </p>
           </div>
         </div>
       </el-col>
     </el-row>
     <el-dialog title="提示" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
-      <span>确定将{{ curApp.name }}加入到收藏夹吗？</span>
+      <span>确定将{{ curApp.name }}从收藏夹中移除吗？</span>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
         <el-button @click="dialogVisible = false">取 消</el-button>
@@ -119,7 +116,6 @@ export default {
         height: 110px;
         float: left;
       }
-
       &-desc {
         height: 110px;
         margin-left: 20px;
@@ -129,6 +125,9 @@ export default {
           margin-bottom: 0.5em;
           /*margin: 10px;*/
         }
+      }
+      &-tag {
+        margin-left: 5px;
       }
     }
   }
