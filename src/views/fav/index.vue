@@ -1,27 +1,28 @@
 <template>
   <div class="store-container">
     <el-row :gutter="20">
-      <el-col :span="3">
-        <el-select v-model="value" placeholder="类型" size="small">
-          <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-select>
-      </el-col>
-      <el-col :span="3">
-        <el-input v-model="input" size="small" placeholder="关键字"></el-input>
-      </el-col>
-      <el-col :span="3">
-        <el-button type="primary" size="small" icon="el-icon-search">搜索</el-button>
+      <el-col :span="24">
+        <el-form :inline="true" :model="searchForm" >
+          <el-form-item label="类型">
+            <el-select v-model="searchForm.type" placeholder="类型" size="small">
+              <el-option
+                v-for="item in appTypes"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="关键字">
+            <el-input v-model="searchForm.keyword" placeholder="关键字" size="small"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="onSearch" size="small">查询</el-button>
+          </el-form-item>
+        </el-form>
       </el-col>
     </el-row>
     <el-row :gutter="20">
-      <el-col :span="24">
-        <el-divider></el-divider>
-      </el-col>
       <el-col v-for="app in list" :key="app.id" :span="6">
         <div class="grid-content bg-purple-light">
           <div class="store-app-logo">
@@ -31,7 +32,7 @@
             <p class="store-app-desc-p">{{ app.name }}<el-tag type="success" size="small" class="store-app-tag">{{ app.type }}</el-tag></p>
             <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em;">{{ app.description | ellipsis }}</p>
             <p>
-              <el-button type="primary"  size="small">运行</el-button>
+              <el-button type="primary" size="small" @click="showNewInstanceDialog($event, app.id)">运行</el-button>
               <el-button size="small" plain @click="showDialog($event, app.id)">移除</el-button>
             </p>
           </div>
@@ -45,13 +46,33 @@
         <el-button @click="dialogVisible = false">取 消</el-button>
       </span>
     </el-dialog>
+    <el-drawer title="新建实例" :before-close="handleClose" :visible.sync="newInstanceDialogVisible" direction="rtl" custom-class="demo-drawer" ref="drawer" size="50%">
+      <el-form ref="form" :model="form" label-width="80px">
+        <el-form-item label="名称">
+          <el-input v-model="form.name"></el-input>
+        </el-form-item>
+        <el-form-item label="端口">
+          <el-input v-model="form.ports"></el-input>
+        </el-form-item>
+        <el-form-item label="描述">
+          <markdown-editor v-model="form.description" :options="{hideModeSwitch:true}" height="200px" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="newInstanceDialogVisible = false">确定</el-button>
+          <el-button @click="newInstanceDialogVisible = false">取 消</el-button>
+        </el-form-item>
+      </el-form>
+    </el-drawer>
   </div>
 </template>
 
 <script>
 import { getList } from '@/api/app'
+import MarkdownEditor from '@/components/MarkdownEditor'
 
 export default {
+  name: 'Fav',
+  components: { MarkdownEditor },
   filters: {
     ellipsis(value) {
       if (!value) return ''
@@ -63,10 +84,25 @@ export default {
   },
   data() {
     return {
+      newInstanceDialogVisible: false,
       dialogVisible: false,
       list: null,
       listLoading: true,
-      curApp: {}
+      curApp: {},
+      form: {
+        description: `Use markdown syntax to fill in the description`
+      },
+      searchForm: {
+        type: '',
+        keyword: ''
+      },
+      appTypes: [{
+        label: 'all',
+        value: ''
+      }, {
+        label: 'iot',
+        value: 'iot'
+      }]
     }
   },
   created() {
@@ -88,13 +124,18 @@ export default {
       }
       return null
     },
-
+    onSearch() {
+      console.info('haha')
+    },
     handleClose(done) {
       done()
     },
     showDialog(event, id) {
       this.dialogVisible = true
       this.curApp = this.findData(id)
+    },
+    showNewInstanceDialog(event, id) {
+      this.newInstanceDialogVisible = true
     }
   }
 }
