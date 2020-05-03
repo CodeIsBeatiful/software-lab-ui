@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import { getList } from '@/api/app'
+import { getList, search } from '@/api/fav'
 import MarkdownEditor from '@/components/MarkdownEditor'
 
 export default {
@@ -125,7 +125,7 @@ export default {
       return null
     },
     onSearch() {
-      console.info('haha')
+      search()
     },
     handleClose(done) {
       done()
