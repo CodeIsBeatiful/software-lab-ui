@@ -73,7 +73,7 @@ export const constantRoutes = [
       {
         path: 'index',
         name: 'instance',
-        component: () => import('@/views/instance/complex'),
+        component: () => import('@/views/instance/index'),
         meta: { title: '实例', icon: 'instance' }
       }
     ]
