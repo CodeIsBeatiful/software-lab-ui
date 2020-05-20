@@ -4,8 +4,8 @@
       <el-select v-model="listQuery.type" placeholder="类型" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
       </el-select>
-      <el-autocomplete class="filter-item" v-model="listQuery.image" style="width: 130px" :fetch-suggestions="imageQuerySearch" placeholder="镜像名称" @select="handleImageSelect"/>
-      <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-autocomplete class="filter-item" v-model="listQuery.image" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="镜像名称" @select="handleImageSelect"/>
+      <el-input v-model="listQuery.title" placeholder="关键字" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         查询
       </el-button>
