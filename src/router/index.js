@@ -43,42 +43,6 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/app',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'app',
-        component: () => import('@/views/app/index'),
-        meta: { title: '商店', icon: 'app' }
-      }
-    ]
-  },
-  {
-    path: '/fav',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'fav',
-        component: () => import('@/views/fav/index'),
-        meta: { title: '收藏', icon: 'fav' }
-      }
-    ]
-  },
-  {
-    path: '/instance',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'instance',
-        component: () => import('@/views/instance/index'),
-        meta: { title: '实例', icon: 'instance' }
-      }
-    ]
-  },
-  {
     path: '/',
     component: Layout,
     redirect: '/dashboard',
@@ -89,7 +53,42 @@ export const constantRoutes = [
       meta: { title: '仪表盘', icon: 'dashboard' }
     }]
   },
-
+  {
+    path: '/app',
+    component: Layout,
+    children: [
+      {
+        path: 'app',
+        name: 'App',
+        component: () => import('@/views/app/index'),
+        meta: { title: '商店', icon: 'app' }
+      }
+    ]
+  },
+  // {
+  //   path: '/fav',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'fav',
+  //       component: () => import('@/views/fav/index'),
+  //       meta: { title: '收藏', icon: 'fav' }
+  //     }
+  //   ]
+  // },
+  {
+    path: '/instance',
+    component: Layout,
+    children: [
+      {
+        path: 'instance',
+        name: 'Instance',
+        component: () => import('@/views/instance/index'),
+        meta: { title: '实例', icon: 'instance' }
+      }
+    ]
+  },
   {
     path: '/example',
     component: Layout,

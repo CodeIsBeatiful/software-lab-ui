@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <el-tag>标签一</el-tag>
     <el-tag type="success">标签二</el-tag>
-    <div class="dashboard-text">name: {{ name }}</div>
+    <div class="dashboard-text">name: {{ name }}，hello!</div>
   </div>
 </template>
 

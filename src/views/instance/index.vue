@@ -228,7 +228,7 @@ export default {
   methods: {
     imageQuerySearch(queryString, cb) {
       const images = this.images
-      const results = queryString ? images.filter(this.createImageFilter(queryString)) : images;
+      const results = queryString ? images.filter(this.createImageFilter(queryString)) : images
       // 调用 callback 返回建议列表的数据
       cb(results)
     },
@@ -242,7 +242,8 @@ export default {
         { 'value': 'Kafka:2.11_2.2.0' }]
     },
     handleImageSelect(item) {
-      console.log(item);
+      // todo something
+      console.log(item)
     },
     getList() {
       this.listLoading = true
