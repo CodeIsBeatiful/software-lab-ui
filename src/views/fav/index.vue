@@ -1,28 +1,18 @@
 <template>
-  <div class="store-container">
-    <el-row :gutter="20">
-      <el-col :span="24">
-        <el-form :inline="true" :model="searchForm" >
-          <el-form-item label="类型">
-            <el-select v-model="searchForm.type" placeholder="类型" size="small">
-              <el-option
-                v-for="item in appTypes"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="关键字">
-            <el-input v-model="searchForm.keyword" placeholder="关键字" size="small"></el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="onSearch" size="small">查询</el-button>
-          </el-form-item>
-        </el-form>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20">
+  <div class="app-container">
+    <div class="filter-container">
+      <el-select v-model="listQuery.type" style="width: 120px" class="filter-item" placeholder="类型">
+        <el-option
+          v-for="item in appTypes"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value">
+        </el-option>
+      </el-select>
+      <el-input v-model="listQuery.keyword" style="width: 130px" class="filter-item" placeholder="关键字"></el-input>
+      <el-button type="primary" class="filter-item" icon="el-icon-search" @click="onSearch">查询</el-button>
+  </div>
+    <el-row :gutter="20" style="margin-top: 20px;">
       <el-col v-for="app in list" :key="app.id" :span="6">
         <div class="grid-content bg-purple-light">
           <div class="store-app-logo">
@@ -92,7 +82,7 @@ export default {
       form: {
         description: `Use markdown syntax to fill in the description`
       },
-      searchForm: {
+      listQuery: {
         type: '',
         keyword: ''
       },
