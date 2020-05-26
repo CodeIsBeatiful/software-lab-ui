@@ -3,7 +3,7 @@
 
     <el-row :gutter="20">
       <el-col :span="24">
-        <el-divider content-position="left">常用工具</el-divider>
+        <el-divider content-position="left">Util</el-divider>
       </el-col>
       <el-col v-for="app in list" :key="app.id" :span="6">
         <div class="grid-content bg-purple-light">
@@ -23,7 +23,7 @@
     </el-row>
     <el-row :gutter="20">
       <el-col :span="24">
-        <el-divider content-position="left">数据库</el-divider>
+        <el-divider content-position="left">DataBase</el-divider>
       </el-col>
       <el-col v-for="app in list" :key="app.id" :span="6">
         <div class="grid-content bg-purple-light">
