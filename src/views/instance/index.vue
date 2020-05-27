@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-select v-model="listQuery.type" placeholder="TYPE" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+      <el-select v-model="listQuery.imageType" placeholder="IMAGE TYPE" clearable class="filter-item" style="width: 130px">
+        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
       <el-autocomplete class="filter-item" v-model="listQuery.image" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="IMAGE NAME" @select="handleImageSelect"/>
       <el-input v-model="listQuery.title" placeholder="KEYWORD" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
@@ -36,13 +36,13 @@
       </el-table-column>
       <el-table-column label="NAME" min-width="100px">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
-          <el-tag>{{ row.type | typeFilter }}</el-tag>
+          <span class="link-type" @click="handleSelect(row)">{{ row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column label="IMAGE NAME" width="300px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.author }}</span>
+          <span>{{ row.image }}</span>
+          <el-tag>{{ row.imageType | typeFilter }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="Status" class-name="status-col" width="100">
@@ -50,19 +50,19 @@
           <el-button :type="row.status | statusTypeFilter" :icon="row.status | statusFilter" size="mini" circle></el-button>
         </template>
       </el-table-column>
-      <el-table-column label="Create Date" width="150px" align="center">
+      <el-table-column label="Create Time" width="150px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ row.createTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Operation Date" width="150px" align="center">
+      <el-table-column label="Operation Time" width="150px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ row.operationTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button type="primary" size="mini" @click="handleSelect(row)">
             Detail
           </el-button>
           <el-button v-if="row.status=='stop'" size="mini" type="success" @click="handleModifyStatus(row,'start')">
@@ -87,36 +87,34 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="Type" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="550px">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="Image Type" prop="image type">
+          <el-select v-model="temp.imageType" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Date" prop="timestamp">
-          <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
+        <el-form-item label="Image" prop="image">
+          <el-autocomplete v-model="temp.image" class="filter-item" placeholder="Please select" :fetch-suggestions="imageQuerySearch" @select="handleImageSelect"/>
         </el-form-item>
         <el-form-item label="Title" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
-        <el-form-item label="Status">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-          </el-select>
+<!--        <el-form-item label="Additional Info" prop="additional Info">-->
+<!--          <el-input v-model="temp.additionalInfo" />-->
+<!--        </el-form-item>-->
+        <el-form-item  v-if="dialogStatus==='select'" label="Create Time" prop="timestamp">
+          <el-date-picker v-model="temp.createTime" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
-        <el-form-item label="Imp">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
-        </el-form-item>
-        <el-form-item label="Remark">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
+        <el-form-item v-if="dialogStatus==='select'" label="Operation Time" prop="timestamp">
+          <el-date-picker v-model="temp.operationTime" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
+        <el-button v-if="dialogStatus==='create'" @click="dialogFormVisible = false">
           Cancel
         </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+        <el-button type="primary" v-if="dialogStatus==='create'" @click="createData()">
           Confirm
         </el-button>
       </div>
@@ -141,10 +139,9 @@ import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
+  { key: 'All', display_name: '' },
+  { key: 'Util', display_name: 'Util' },
+  { key: 'DataBase', display_name: 'DataBase' }
 ]
 
 // arr to obj, such as { CN : "China", US : "USA" }
@@ -186,9 +183,10 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        importance: undefined,
+        image: undefined,
         title: undefined,
-        type: undefined,
+        imageType: undefined,
+        additionalInfo: undefined,
         sort: '+id'
       },
       importanceOptions: [1, 2, 3],
@@ -208,7 +206,7 @@ export default {
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
-        update: 'Edit',
+        select: 'Detail',
         create: 'Create'
       },
       dialogPvVisible: false,
@@ -319,10 +317,10 @@ export default {
         }
       })
     },
-    handleUpdate(row) {
+    handleSelect(row) {
       this.temp = Object.assign({}, row) // copy obj
       this.temp.timestamp = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
+      this.dialogStatus = 'select'
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
