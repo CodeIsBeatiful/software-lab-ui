@@ -4,7 +4,7 @@
       <el-select v-model="listQuery.imageType" placeholder="IMAGE TYPE" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
-      <el-autocomplete class="filter-item" v-model="listQuery.image" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="IMAGE NAME" @select="handleImageSelect"/>
+      <el-autocomplete v-model="listQuery.image" class="filter-item" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="IMAGE NAME" @select="handleImageSelect" />
       <el-input v-model="listQuery.title" placeholder="KEYWORD" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         QUERY
@@ -47,7 +47,7 @@
       </el-table-column>
       <el-table-column label="Status" class-name="status-col" width="100">
         <template slot-scope="{row}">
-          <el-button :type="row.status | statusTypeFilter" :icon="row.status | statusFilter" size="mini" circle></el-button>
+          <el-button :type="row.status | statusTypeFilter" :icon="row.status | statusFilter" size="mini" circle />
         </template>
       </el-table-column>
       <el-table-column label="Create Time" width="150px" align="center">
@@ -76,10 +76,10 @@
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column v-if="showReviewer"  label="CLI" width="110px" align="center">
+      <el-table-column v-if="showReviewer" label="CLI" width="110px" align="center">
         <template slot-scope="{row}">
           <el-button v-if="row.status=='start'" size="mini" circle>
-            <svg-icon icon-class="command"/>
+            <svg-icon icon-class="command" />
           </el-button>
         </template>
       </el-table-column>
@@ -95,15 +95,15 @@
           </el-select>
         </el-form-item>
         <el-form-item label="Image" prop="image">
-          <el-autocomplete v-model="temp.image" class="filter-item" placeholder="Please select" :fetch-suggestions="imageQuerySearch" @select="handleImageSelect"/>
+          <el-autocomplete v-model="temp.image" class="filter-item" placeholder="Please select" :fetch-suggestions="imageQuerySearch" @select="handleImageSelect" />
         </el-form-item>
         <el-form-item label="Title" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
-<!--        <el-form-item label="Additional Info" prop="additional Info">-->
-<!--          <el-input v-model="temp.additionalInfo" />-->
-<!--        </el-form-item>-->
-        <el-form-item  v-if="dialogStatus==='select'" label="Create Time" prop="timestamp">
+        <el-form-item label="Additional Info" prop="additionalInfo">
+          <el-input v-model="temp.additionalInfo" />
+        </el-form-item>
+        <el-form-item v-if="dialogStatus==='select'" label="Create Time" prop="timestamp">
           <el-date-picker v-model="temp.createTime" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='select'" label="Operation Time" prop="timestamp">
@@ -114,7 +114,7 @@
         <el-button v-if="dialogStatus==='create'" @click="dialogFormVisible = false">
           Cancel
         </el-button>
-        <el-button type="primary" v-if="dialogStatus==='create'" @click="createData()">
+        <el-button v-if="dialogStatus==='create'" type="primary" @click="createData()">
           Confirm
         </el-button>
       </div>
@@ -133,7 +133,7 @@
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+import { fetchList, createInstance } from '@/api/instance'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -184,24 +184,23 @@ export default {
         page: 1,
         limit: 20,
         image: undefined,
-        title: undefined,
         imageType: undefined,
-        additionalInfo: undefined,
+        title: undefined,
         sort: '+id'
       },
-      importanceOptions: [1, 2, 3],
       calendarTypeOptions,
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['published', 'draft', 'deleted'],
+      statusOptions: ['start', 'stop'],
       showReviewer: false,
       temp: {
         id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
+        imageType: undefined,
+        image: undefined,
         title: '',
-        type: '',
-        status: 'published'
+        createTime: new Date(),
+        operationTIme: new Date(),
+        additionalInfo: '',
+        status: 'stop'
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -222,6 +221,9 @@ export default {
   created() {
     this.getList()
     this.getImageList()
+  },
+  mounted() {
+    // do nothing
   },
   methods: {
     imageQuerySearch(queryString, cb) {
@@ -283,12 +285,12 @@ export default {
     resetTemp() {
       this.temp = {
         id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
+        createTime: new Date(),
+        operationTime: new Date(),
         title: '',
-        status: 'published',
-        type: ''
+        status: 'stop',
+        imageType: '',
+        imageName: ''
       }
     },
     handleCreate() {
@@ -303,8 +305,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
+          createInstance(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -326,25 +327,6 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    updateData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
-      })
-    },
     handleDelete(row, index) {
       this.$notify({
         title: 'Success',
@@ -353,12 +335,6 @@ export default {
         duration: 2000
       })
       this.list.splice(index, 1)
-    },
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
-      })
     },
     handleDownload() {
       this.downloadLoading = true
@@ -387,9 +363,6 @@ export default {
       const sort = this.listQuery.sort
       return sort === `+${key}` ? 'ascending' : 'descending'
     }
-  },
-  mounted() {
-    // do nothing
   }
 }
 </script>

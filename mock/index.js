@@ -5,13 +5,11 @@ import user from './user'
 import table from './table'
 import app from './app'
 import instance from './instance'
-import article from './article'
 const mocks = [
   ...user,
   ...table,
   ...app,
-  ...instance,
-  ...article
+  ...instance
 ]
 
 // for front mock

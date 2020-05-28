@@ -8,7 +8,7 @@
       <el-col v-for="app in list" :key="app.id" :span="6">
         <div class="grid-content bg-purple-light">
           <div class="store-app-logo">
-            <img :src="app.logo" style="width: 96px;height: 96px;margin: 5px; border-radius: 10px;" />
+            <img :src="app.logo" style="width: 96px;height: 96px;margin: 5px; border-radius: 10px;">
           </div>
           <div class="store-app-desc">
             <p class="store-app-desc-p">{{ app.name }}</p>
