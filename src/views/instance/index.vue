@@ -36,7 +36,7 @@
       </el-table-column>
       <el-table-column label="NAME" min-width="100px">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleSelect(row)">{{ row.title }}</span>
+          <span class="link-type" @click="handleDetail(row)">{{ row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column label="IMAGE NAME" width="300px" align="center">
@@ -62,7 +62,7 @@
       </el-table-column>
       <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleSelect(row)">
+          <el-button type="primary" size="mini" @click="handleDetail(row)">
             Detail
           </el-button>
           <el-button v-if="row.status=='stop'" size="mini" type="success" @click="handleModifyStatus(row,'start')">
@@ -89,7 +89,7 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="550px">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="Image Type" prop="image type">
+        <el-form-item label="Image Type" prop="imageType">
           <el-select v-model="temp.imageType" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
@@ -100,14 +100,14 @@
         <el-form-item label="Title" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
-        <el-form-item label="Additional Info" prop="additionalInfo">
-          <el-input v-model="temp.additionalInfo" />
-        </el-form-item>
-        <el-form-item v-if="dialogStatus==='select'" label="Create Time" prop="timestamp">
+        <el-form-item v-if="dialogStatus==='detail'" label="Create Time" prop="timestamp">
           <el-date-picker v-model="temp.createTime" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
-        <el-form-item v-if="dialogStatus==='select'" label="Operation Time" prop="timestamp">
+        <el-form-item v-if="dialogStatus==='detail'" label="Operation Time" prop="timestamp">
           <el-date-picker v-model="temp.operationTime" type="datetime" placeholder="Please pick a date" />
+        </el-form-item>
+        <el-form-item v-if="dialogStatus==='detail'" label="Additional Info" prop="additionalInfo">
+          <el-input v-model="temp.additionalInfo" type="textarea" :rows="2" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -205,14 +205,14 @@ export default {
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
-        select: 'Detail',
+        detail: 'Detail',
         create: 'Create'
       },
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
+        imageType: [{ required: true, message: 'image type is required', trigger: 'change' }],
+        image: [{ required: true, message: 'image is required', trigger: 'change' }],
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
       downloadLoading: false
@@ -318,7 +318,7 @@ export default {
         }
       })
     },
-    handleSelect(row) {
+    handleDetail(row) {
       this.temp = Object.assign({}, row) // copy obj
       this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'select'
