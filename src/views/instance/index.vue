@@ -90,24 +90,24 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="550px">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
         <el-form-item v-if="dialogStatus==='create'" label="Image Type" prop="imageType">
-          <el-select v-model="temp.imageType" v-bind:disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select">
+          <el-select v-model="temp.imageType" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </el-form-item>
         <el-form-item label="Image" prop="image">
-          <el-autocomplete v-model="temp.image" v-bind:disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select" :fetch-suggestions="imageQuerySearch" @select="handleImageSelect" />
+          <el-autocomplete v-model="temp.image" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select" :fetch-suggestions="imageQuerySearch" @select="handleImageSelect" />
         </el-form-item>
         <el-form-item label="Title" prop="title">
-          <el-input v-model="temp.title" v-bind:disabled="dialogStatus==='detail'"/>
+          <el-input v-model="temp.title" :disabled="dialogStatus==='detail'" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Create Time" prop="timestamp">
-          <el-date-picker v-model="temp.createTime" v-bind:disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
+          <el-date-picker v-model="temp.createTime" :disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Operation Time" prop="timestamp">
-          <el-date-picker v-model="temp.operationTime" v-bind:disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
+          <el-date-picker v-model="temp.operationTime" :disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Additional Info" prop="additionalInfo">
-          <el-input v-model="temp.additionalInfo" v-bind:disabled="dialogStatus==='detail'" type="textarea" :rows="2" />
+          <el-input v-model="temp.additionalInfo" :disabled="dialogStatus==='detail'" type="textarea" :rows="2" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
