@@ -76,11 +76,11 @@
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column v-if="showReviewer" label="CLI" width="110px" align="center">
+      <el-table-column v-if="showReviewer" label="Terminal" width="110px" align="center">
         <template slot-scope="{row}">
-          <el-button v-if="row.status=='start'" size="mini" circle>
-            <svg-icon icon-class="command" />
-          </el-button>
+          <el-link v-if="row.status=='start'" target="_blank" href="#/terminal/terminal" style="height: 2em">
+            <svg-icon icon-class="command" style="width: 2em; height: 2em" />
+          </el-link>
         </template>
       </el-table-column>
     </el-table>

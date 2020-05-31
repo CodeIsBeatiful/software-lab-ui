@@ -89,6 +89,19 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/terminal',
+    hidden: true,
+    component: Layout,
+    children: [
+      {
+        path: 'terminal',
+        name: 'terminal',
+        component: () => import('@/views/terminal/index'),
+        meta: { title: '终端', icon: 'command' }
+      }
+    ]
+  },
   // {
   //   path: '/example',
   //   component: Layout,
