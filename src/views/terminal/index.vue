@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="terminal" ref="terminal"/>
+    <div id="terminal" ref="terminal" />
   </div>
 </template>
 
@@ -45,11 +45,31 @@ export default {
 
     // 创建ws实例
     // 这里还把窗口的column和row传入后端,使其能自动针对前端窗口边框改为输出
-    // this.socket = new WebSocket(`ws://127.0.0.1:8080/api/ws/test?cols=${this.term.cols}&rows=${this.term.rows}'`)
+    this.socket = new WebSocket(`ws://127.0.0.1:8080/api/ws/test?cols=${this.term.cols}&rows=${this.term.rows}'`)
     // xterm的socket组件与websocket实例结合
     // const attachAddon = new AttachAddon(this.socket)
     // this.term.loadAddon(attachAddon)
+    const that = this
+    this.socket.addEventListener('message', function(event) {
+      console.info(event.data)
+      const message = JSON.parse(event.data)
+      const splitLines = message.data.split('\n')
+      if (splitLines.length > 0 && splitLines[splitLines.length - 1].length === 0) {
+        // remove last line
+        splitLines.pop()
+      }
+      splitLines.forEach((value) => {
+        if (message.type === 'error') {
+          that.term.writeln('\x1B[1;3;31m' + value + '\x1B[0m')
+        } else {
+          that.term.writeln('\x1B[1;3;32m' + value + '\x1B[0m')
+        }
+      })
+      // todo how to print socket message
+      that.term.prompt()
+    })
 
+    this.cache = []
     // 参考官方demo
     // https://github.com/xtermjs/xterm.js/blob/master/demo/client.ts
     this.term.prompt = () => {
@@ -60,26 +80,25 @@ export default {
     this.term.writeln('Software Lab allows you to quickly get an application with one click')
     this.term.writeln('')
     this.term.prompt()
-
     this.term.onKey((e) => {
       const ev = e.domEvent
       const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey
 
       if (ev.keyCode === 13) { // Enter
-        this.term.prompt()
-        // todo do some
+        // this.term.prompt()
+        this.socket.send(this.cache.join(''))
+        this.term.writeln('')
+        this.cache = []
       } else if (ev.keyCode === 8) { // Backspace
         // Do not delete the prompt
+        this.cache.pop()
         if (this.term._core.buffer.x > 2) {
           this.term.write('\b \b')
         }
       } else if (printable) {
         this.term.write(e.key)
+        this.cache.push(e.key)
       }
-    })
-
-    this.term.onLineFeed((obj) => {
-      console.info(obj)
     })
 
     // 监听resize,当窗口拖动的时候,监听事件,实时改变xterm窗口
