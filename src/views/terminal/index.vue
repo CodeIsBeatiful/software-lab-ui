@@ -8,9 +8,8 @@
 
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
-// import { AttachAddon } from 'xterm-addon-attach'
 import { WebLinksAddon } from 'xterm-addon-web-links'
-// 这个特别重要,一定要在开头就引入css,否则可能会导致样式错误
+// This is particularly important, be sure to introduce css at the beginning, otherwise it may cause style errors
 import 'xterm/css/xterm.css'
 
 export default {
@@ -22,33 +21,31 @@ export default {
     }
   },
   mounted() {
-    // 实例化终端并设置参数
+    // This is particularly important, be sure to introduce css at the beginning, otherwise it may cause style errors
     this.term = new Terminal({
       cursorBlink: true
     })
 
-    // 加载自适应组件
+    // Load adaptive components
     this.fitAddon = new FitAddon()
     this.term.loadAddon(this.fitAddon)
 
-    // 加载weblink组件
+    // Load weblink components
     this.term.loadAddon(new WebLinksAddon())
 
-    // 在绑定的组件上初始化窗口
+    // Initialize the window on the bound component
     this.term.open(this.$refs.terminal)
 
-    // 窗口初始化后,按照浏览器窗口自适应大小
+    // After the window is initialized, it adapts to the size of the browser window
     this.fitAddon.fit()
 
-    // 聚焦
+    // focus
     this.term.focus()
 
-    // 创建ws实例
-    // 这里还把窗口的column和row传入后端,使其能自动针对前端窗口边框改为输出
+    // Create ws instance
+    // Here, the column and row of the window are also passed into the back end,
+    // so that it can be automatically changed to output for the front window border
     this.socket = new WebSocket(`ws://127.0.0.1:8080/api/ws/test?cols=${this.term.cols}&rows=${this.term.rows}'`)
-    // xterm的socket组件与websocket实例结合
-    // const attachAddon = new AttachAddon(this.socket)
-    // this.term.loadAddon(attachAddon)
     const that = this
     this.socket.addEventListener('message', function(event) {
       console.info(event.data)
@@ -65,12 +62,10 @@ export default {
           that.term.writeln('\x1B[1;3;32m' + value + '\x1B[0m')
         }
       })
-      // todo how to print socket message
       that.term.prompt()
     })
 
     this.cache = []
-    // 参考官方demo
     // https://github.com/xtermjs/xterm.js/blob/master/demo/client.ts
     this.term.prompt = () => {
       this.term.write('\r\n$ ')
@@ -101,11 +96,11 @@ export default {
       }
     })
 
-    // 监听resize,当窗口拖动的时候,监听事件,实时改变xterm窗口
+    // Listen to resize, when the window is dragged, listen to events and change the xterm window in real time
     window.addEventListener('resize', this.debounce(this.resizeScreen, 1500), false)
   },
   methods: {
-    // 节流,避免拖动时候频繁向后端请求更新
+    // Throttling to avoid frequent requests for updates to the backend when dragging
     debounce(fn, wait) {
       let timeout = null
       return function() {
@@ -113,9 +108,9 @@ export default {
         timeout = setTimeout(fn, wait)
       }
     },
-    // 页面重新resize的时候,需要重新告诉后端cols和rows
+    // When the page is resized, you need to tell the backend cols and rows again
     resizeScreen() {
-      // 对xterm的窗口重新fit,获取新的cols和rows
+      // Refit the window of xterm to get new cols and rows
       this.fitAddon.fit()
       this.socket.send(JSON.stringify([this.term.cols, this.term.rows]))
     }
