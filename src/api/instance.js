@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(query) {
   return request({
-    url: '/vue-element-admin/instances/list',
+    url: '/instances',
     method: 'get',
     params: query
   })
@@ -10,9 +10,25 @@ export function fetchList(query) {
 
 export function createInstance(data) {
   return request({
-    url: '/vue-element-admin/instances/create',
+    url: '/instances',
     method: 'post',
     data
+  })
+}
+
+export function startInstance(id) {
+  return request({
+    url: '/instanceOperation/' + id,
+    method: 'post',
+    data: 'op=start'
+  })
+}
+
+export function stopInstance(id) {
+  return request({
+    url: '/instanceOperation/' + id,
+    method: 'post',
+    data: 'op=stop'
   })
 }
 

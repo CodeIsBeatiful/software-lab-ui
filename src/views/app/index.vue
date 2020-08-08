@@ -3,12 +3,12 @@
 
     <el-row :gutter="20">
       <el-col :span="24">
-        <el-divider content-position="left">Util</el-divider>
+        <el-divider content-position="left">ALL</el-divider>
       </el-col>
       <el-col v-for="app in list" :key="app.id" :span="6">
         <div class="grid-content bg-purple-light">
           <div class="store-app-logo">
-            <img :src="app.logo" style="width: 96px;height: 96px;margin: 5px; border-radius: 10px;">
+            <img :src="'/api/files/logo/'+app.name" style="width: 96px;height: 96px;margin: 5px; border-radius: 10px;">
           </div>
           <div class="store-app-desc">
             <p class="store-app-desc-p">{{ app.name }}</p>
@@ -21,26 +21,26 @@
         </div>
       </el-col>
     </el-row>
-    <el-row :gutter="20">
-      <el-col :span="24">
-        <el-divider content-position="left">DataBase</el-divider>
-      </el-col>
-      <el-col v-for="app in list" :key="app.id" :span="6">
-        <div class="grid-content bg-purple-light">
-          <div class="store-app-logo">
-            <svg-icon icon-class="example" style="width: 96px;height: 96px;margin: 5px;" />
-          </div>
-          <div class="store-app-desc">
-            <p class="store-app-desc-p">{{ app.name }}</p>
-            <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em;">{{ app.description | ellipsis }}</p>
-            <p>
-              <el-button type="primary" size="small" :disabled="app.isCollect" @click="showDialog($event, app.id)">收藏</el-button>
-              <el-button icon="el-icon-star-off" size="small" plain>{{ app.stars }}</el-button>
-            </p>
-          </div>
-        </div>
-      </el-col>
-    </el-row>
+<!--    <el-row :gutter="20">-->
+<!--      <el-col :span="24">-->
+<!--        <el-divider content-position="left">DataBase</el-divider>-->
+<!--      </el-col>-->
+<!--      <el-col v-for="app in list" :key="app.id" :span="6">-->
+<!--        <div class="grid-content bg-purple-light">-->
+<!--          <div class="store-app-logo">-->
+<!--            <svg-icon icon-class="example" style="width: 96px;height: 96px;margin: 5px;" />-->
+<!--          </div>-->
+<!--          <div class="store-app-desc">-->
+<!--            <p class="store-app-desc-p">{{ app.name }}</p>-->
+<!--            <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em;">{{ app.description | ellipsis }}</p>-->
+<!--            <p>-->
+<!--              <el-button type="primary" size="small" :disabled="app.isCollect" @click="showDialog($event, app.id)">收藏</el-button>-->
+<!--              <el-button icon="el-icon-star-off" size="small" plain>{{ app.stars }}</el-button>-->
+<!--            </p>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </el-col>-->
+<!--    </el-row>-->
     <el-dialog title="提示" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
       <span>确定将{{ curApp.name }}加入到收藏夹吗？</span>
       <span slot="footer" class="dialog-footer">
@@ -78,8 +78,11 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
+      getList({
+        'pageNum': 0,
+        'pageSize': 10
+      }).then(response => {
+        this.list = response.data.records
         this.listLoading = false
       })
     },

@@ -29,35 +29,40 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="80" :class-name="getSortClass('id')">
+<!--      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="300" :class-name="getSortClass('id')">-->
+<!--        <template slot-scope="{row}">-->
+<!--          <span>{{ row.id }}</span>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+      <el-table-column label="NAME" min-width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.id }}</span>
+          <span class="link-type" @click="handleDetail(row)">{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="NAME" min-width="100px">
+      <el-table-column label="IMAGE NAME" width="250px" align="center">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleDetail(row)">{{ row.title }}</span>
+          <span>{{ row.appName }}</span>
+<!--          <el-tag>{{ row.imageType | typeFilter }}</el-tag>-->
         </template>
       </el-table-column>
-      <el-table-column label="IMAGE NAME" width="300px" align="center">
+      <el-table-column label="VERSION" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.image }}</span>
-          <el-tag>{{ row.imageType | typeFilter }}</el-tag>
+          <span>{{ row.appVersion }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Status" class-name="status-col" width="100">
+      <el-table-column label="RUNNING STATUS" class-name="status-col" width="100">
         <template slot-scope="{row}">
-          <el-button :type="row.status | statusTypeFilter" :icon="row.status | statusFilter" size="mini" circle />
+          <el-button :type="row.runningStatus | statusTypeFilter" :icon="row.runningStatus | statusFilter" size="mini" circle />
         </template>
       </el-table-column>
-      <el-table-column label="Create Time" width="150px" align="center">
+      <el-table-column label="Create Time" width="180px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.createTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ row.createTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Operation Time" width="150px" align="center">
+      <el-table-column label="Operation Time" width="180px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.operationTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ row.updateTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
@@ -65,20 +70,20 @@
           <el-button type="primary" size="mini" @click="handleDetail(row)">
             Detail
           </el-button>
-          <el-button v-if="row.status=='stop'" size="mini" type="success" @click="handleModifyStatus(row,'start')">
+          <el-button v-if="row.runningStatus===0" size="mini" type="success" @click="handleModifyStatus(row,1)">
             Start
           </el-button>
-          <el-button v-if="row.status=='start'" size="mini" type="warning" @click="handleModifyStatus(row,'stop')">
+          <el-button v-if="row.runningStatus===1" size="mini" type="warning" @click="handleModifyStatus(row,0)">
             Stop
           </el-button>
-          <el-button v-if="row.status=='stop'" size="mini" type="danger" @click="handleDelete(row,$index)">
+          <el-button v-if="row.runningStatus===0" size="mini" type="danger" @click="handleDelete(row,$index)">
             Remove
           </el-button>
         </template>
       </el-table-column>
       <el-table-column v-if="showReviewer" label="Terminal" width="110px" align="center">
         <template slot-scope="{row}">
-          <el-link v-if="row.status=='start'" target="_blank" href="#/terminal/terminal" style="height: 2em">
+          <el-link v-if="row.runningStatus==1" target="_blank" href="#/terminal/terminal" style="height: 2em">
             <svg-icon icon-class="command" style="width: 2em; height: 2em" />
           </el-link>
         </template>
@@ -97,14 +102,14 @@
         <el-form-item label="Image" prop="image">
           <el-autocomplete v-model="temp.image" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select" :fetch-suggestions="imageQuerySearch" @select="handleImageSelect" />
         </el-form-item>
-        <el-form-item label="Title" prop="title">
-          <el-input v-model="temp.title" :disabled="dialogStatus==='detail'" />
+        <el-form-item label="Name" prop="name">
+          <el-input v-model="temp.name" :disabled="dialogStatus==='detail'" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Create Time" prop="timestamp">
           <el-date-picker v-model="temp.createTime" :disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Operation Time" prop="timestamp">
-          <el-date-picker v-model="temp.operationTime" :disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
+          <el-date-picker v-model="temp.updateTime" :disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Additional Info" prop="additionalInfo">
           <el-input v-model="temp.additionalInfo" :disabled="dialogStatus==='detail'" type="textarea" :rows="2" />
@@ -133,7 +138,7 @@
 </template>
 
 <script>
-import { fetchList, createInstance } from '@/api/instance'
+import { fetchList, createInstance, startInstance, stopInstance } from '@/api/instance'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -157,15 +162,15 @@ export default {
   filters: {
     statusFilter(status) {
       const statusMap = {
-        start: 'el-icon-check',
-        stop: 'el-icon-close'
+        1: 'el-icon-check',
+        0: 'el-icon-close'
       }
       return statusMap[status]
     },
     statusTypeFilter(status) {
       const statusMap = {
-        start: 'success',
-        stop: 'warning'
+        1: 'success',
+        0: 'warning'
       }
       return statusMap[status]
     },
@@ -247,8 +252,11 @@ export default {
     },
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
+      fetchList({
+        'pageNum': this.listQuery.page - 1,
+        'pageSize': this.listQuery.limit
+      }).then(response => {
+        this.list = response.data.records
         this.total = response.data.total
 
         // Just to simulate the time of the request
@@ -262,11 +270,25 @@ export default {
       this.getList()
     },
     handleModifyStatus(row, status) {
-      this.$message({
-        message: '操作Success',
-        type: 'success'
-      })
-      row.status = status
+      if (status === 1) {
+        startInstance(row.id).then(response => {
+          this.$message({
+            message: 'start ' + row.name + ' success !',
+            type: 'success'
+          })
+          this.getList()
+        })
+      } else if (status === 0) {
+        stopInstance(row.id).then(response => {
+          this.$message({
+            message: 'stop ' + row.name + ' success !',
+            type: 'success'
+          })
+          this.getList()
+        })
+      } else {
+        // do nothing
+      }
     },
     sortChange(data) {
       const { prop, order } = data
