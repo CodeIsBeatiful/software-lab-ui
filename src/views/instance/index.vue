@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-select v-model="listQuery.imageType" placeholder="IMAGE TYPE" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+      <el-select v-model="listQuery.imageType" @change="handleImageTypeSelect" placeholder="IMAGE TYPE" clearable class="filter-item" style="width: 130px">
+        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />
       </el-select>
       <el-autocomplete v-model="listQuery.image" class="filter-item" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="IMAGE NAME" @select="handleImageSelect" />
       <el-input v-model="listQuery.title" placeholder="KEYWORD" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
@@ -83,7 +83,7 @@
       </el-table-column>
       <el-table-column v-if="showReviewer" label="Terminal" width="110px" align="center">
         <template slot-scope="{row}">
-          <el-link v-if="row.runningStatus==1" target="_blank" href="#/terminal/terminal" style="height: 2em">
+          <el-link v-if="row.runningStatus==1" target="_blank" :href="'#/terminal/terminal?id='+ row.id" style="height: 2em">
             <svg-icon icon-class="command" style="width: 2em; height: 2em" />
           </el-link>
         </template>
@@ -96,7 +96,7 @@
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
         <el-form-item v-if="dialogStatus==='create'" label="Image Type" prop="imageType">
           <el-select v-model="temp.imageType" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+            <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="Image" prop="image">
@@ -139,21 +139,17 @@
 
 <script>
 import { fetchList, createInstance, startInstance, stopInstance } from '@/api/instance'
+import { getTypes, getNamesByType } from '@/api/app'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
-const calendarTypeOptions = [
-  { key: 'All', display_name: '' },
-  { key: 'Util', display_name: 'Util' },
-  { key: 'DataBase', display_name: 'DataBase' }
-]
-
-// arr to obj, such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
+// const calendarTypeOptions = [
+//   { key: 'All', display_name: '' },
+//   { key: 'Util', display_name: 'Util' },
+//   { key: 'DataBase', display_name: 'DataBase' },
+//   { key: 'BI', display_name: 'BI' }
+// ]
 
 export default {
   name: 'ComplexTable',
@@ -175,12 +171,12 @@ export default {
       return statusMap[status]
     },
     typeFilter(type) {
-      return calendarTypeKeyValue[type]
+      return this.calendarTypeKeyValue[type]
     }
   },
   data() {
     return {
-      images: null,
+      images: [],
       tableKey: 0,
       list: null,
       total: 0,
@@ -193,7 +189,8 @@ export default {
         title: undefined,
         sort: '+id'
       },
-      calendarTypeOptions,
+      calendarTypeOptions: [],
+      calendarTypeKeyValue: {},
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['start', 'stop'],
       showReviewer: false,
@@ -225,7 +222,7 @@ export default {
   },
   created() {
     this.getList()
-    this.getImageList()
+    this.getOptions()
   },
   mounted() {
     // do nothing
@@ -242,9 +239,15 @@ export default {
         return (image.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
       }
     },
-    getImageList() {
-      this.images = [{ 'value': 'PG:9.6' },
-        { 'value': 'Kafka:2.11_2.2.0' }]
+    handleImageTypeSelect(item) {
+      this.images = []
+      this.listQuery.image = undefined
+      getNamesByType(item).then(response => {
+        const data = response.data
+        for (let i = 0; i < data.length; i++) {
+          this.images[i] = { 'value': data[i] }
+        }
+      })
     },
     handleImageSelect(item) {
       // todo something
@@ -263,6 +266,16 @@ export default {
         setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000)
+      })
+    },
+    getOptions() {
+      getTypes().then(response => {
+        this.calendarTypeOptions = response.data
+        // arr to obj, such as { CN : "China", US : "USA" }
+        this.calendarTypeKeyValue = this.calendarTypeOptions.reduce((acc, cur) => {
+          acc[cur.key] = cur.value
+          return acc
+        }, {})
       })
     },
     handleFilter() {
@@ -350,13 +363,13 @@ export default {
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: 'Success',
-        message: 'Delete Successfully',
-        type: 'success',
-        duration: 2000
-      })
-      this.list.splice(index, 1)
+      // this.$notify({
+      //   title: 'Success',
+      //   message: 'Delete Successfully',
+      //   type: 'success',
+      //   duration: 2000
+      // })
+      // this.list.splice(index, 1)
     },
     handleDownload() {
       this.downloadLoading = true

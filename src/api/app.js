@@ -8,9 +8,18 @@ export function getList(params) {
   })
 }
 
-export function getType() {
+export function getTypes() {
   return request({
-    url: '/apps/type',
+    url: '/appTypes',
     method: 'get'
+  })
+}
+export function getNamesByType(type) {
+  return request({
+    url: '/apps/names',
+    method: 'get',
+    params: {
+      type: type
+    }
   })
 }

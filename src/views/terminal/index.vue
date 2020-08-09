@@ -9,6 +9,8 @@
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
+import { getToken } from '@/utils/auth'
+import { param2Obj } from '@/utils'
 // This is particularly important, be sure to introduce css at the beginning, otherwise it may cause style errors
 import 'xterm/css/xterm.css'
 
@@ -17,7 +19,9 @@ export default {
   data() {
     return {
       socket: '',
-      term: null
+      term: null,
+      id: param2Obj(window.location.href).id,
+      token: getToken()
     }
   },
   mounted() {
@@ -45,12 +49,13 @@ export default {
     // Create ws instance
     // Here, the column and row of the window are also passed into the back end,
     // so that it can be automatically changed to output for the front window border
-    this.socket = new WebSocket(`ws://127.0.0.1:8080/api/ws/test?cols=${this.term.cols}&rows=${this.term.rows}'`)
+    // todo need add jwt token on http header
+    this.socket = new WebSocket(`ws://127.0.0.1:8080/api/ws/terminal/${this.id}?token=${this.token}&cols=${this.term.cols}&rows=${this.term.rows}'`)
     const that = this
     this.socket.addEventListener('message', function(event) {
       console.info(event.data)
       const message = JSON.parse(event.data)
-      const splitLines = message.data.split('\n')
+      const splitLines = message.detail.split('\n')
       if (splitLines.length > 0 && splitLines[splitLines.length - 1].length === 0) {
         // remove last line
         splitLines.pop()
