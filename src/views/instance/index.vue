@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-select v-model="listQuery.imageType" @change="handleImageTypeSelect" placeholder="IMAGE TYPE" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.imageType" @change="handleImageTypeSelect" placeholder="APP TYPE" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />
       </el-select>
-      <el-autocomplete v-model="listQuery.image" class="filter-item" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="IMAGE NAME" @select="handleImageSelect" />
-      <el-input v-model="listQuery.title" placeholder="KEYWORD" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-autocomplete v-model="listQuery.image" class="filter-item" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="APP NAME" @select="handleImageSelect" />
+      <el-input v-model="listQuery.name" placeholder="KEYWORD" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         QUERY
       </el-button>
@@ -39,7 +39,7 @@
           <span class="link-type" @click="handleDetail(row)">{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="IMAGE NAME" width="250px" align="center">
+      <el-table-column label="APP NAME" width="250px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.appName }}</span>
 <!--          <el-tag>{{ row.imageType | typeFilter }}</el-tag>-->
@@ -90,29 +90,32 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNum" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="550px">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
-        <el-form-item v-if="dialogStatus==='create'" label="Image Type" prop="imageType">
-          <el-select v-model="temp.imageType" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select">
+        <el-form-item v-if="dialogStatus==='create'" label="App Type" prop="imageType">
+          <el-select v-model="temp.imageType" @change="handleImageTypeSelectInDialog" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Image" prop="image">
-          <el-autocomplete v-model="temp.image" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select" :fetch-suggestions="imageQuerySearch" @select="handleImageSelect" />
-        </el-form-item>
+        <el-form-item label="App" prop="appName">
+          <el-select v-if="dialogStatus==='create'" v-model="temp.appName" @change="handleImageSelectInDialog" class="filter-item" placeholder="Please select">
+            <el-option v-for="item in tempImages" :key="item.key" :label="item.key" :value="item.value" />
+          </el-select>
+          <el-input v-if="dialogStatus==='detail'" v-model="temp.appName" :disabled="true"></el-input>
+          </el-form-item>
         <el-form-item label="Name" prop="name">
           <el-input v-model="temp.name" :disabled="dialogStatus==='detail'" />
+        </el-form-item>
+        <el-form-item v-if="dialogStatus==='detail'" label="Additional Info" prop="additionalInfo">
+          <el-input v-model="temp.additionalInfo" :disabled="dialogStatus==='detail'" type="textarea" :rows="2" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Create Time" prop="timestamp">
           <el-date-picker v-model="temp.createTime" :disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Operation Time" prop="timestamp">
           <el-date-picker v-model="temp.updateTime" :disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
-        </el-form-item>
-        <el-form-item v-if="dialogStatus==='detail'" label="Additional Info" prop="additionalInfo">
-          <el-input v-model="temp.additionalInfo" :disabled="dialogStatus==='detail'" type="textarea" :rows="2" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -182,11 +185,11 @@ export default {
       total: 0,
       listLoading: true,
       listQuery: {
-        page: 1,
-        limit: 20,
+        pageNum: 1,
+        pageSize: 20,
         image: undefined,
         imageType: undefined,
-        title: undefined,
+        name: undefined,
         sort: '+id'
       },
       calendarTypeOptions: [],
@@ -194,11 +197,11 @@ export default {
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['start', 'stop'],
       showReviewer: false,
+      tempImages: [],
       temp: {
         id: undefined,
-        imageType: undefined,
-        image: undefined,
-        title: '',
+        appName: undefined,
+        name: undefined,
         createTime: new Date(),
         operationTIme: new Date(),
         additionalInfo: '',
@@ -213,9 +216,8 @@ export default {
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        imageType: [{ required: true, message: 'image type is required', trigger: 'change' }],
-        image: [{ required: true, message: 'image is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        appName: [{ required: true, message: 'app is required', trigger: 'blur' }],
+        name: [{ required: true, message: 'name is required', trigger: 'blur' }]
       },
       downloadLoading: false
     }
@@ -249,16 +251,25 @@ export default {
         }
       })
     },
+    handleImageTypeSelectInDialog(item) {
+      this.tempImages = []
+      this.temp.appName = undefined
+      getNamesByType(item).then(response => {
+        const data = response.data
+        for (let i = 0; i < data.length; i++) {
+          this.tempImages.push({ 'key': data[i], 'value': data[i] })
+        }
+      })
+    },
+    handleImageSelectInDialog(item) {
+      console.log(item)
+    },
     handleImageSelect(item) {
-      // todo something
       console.log(item)
     },
     getList() {
       this.listLoading = true
-      fetchList({
-        'pageNum': this.listQuery.page - 1,
-        'pageSize': this.listQuery.limit
-      }).then(response => {
+      fetchList(this.listQuery).then(response => {
         this.list = response.data.records
         this.total = response.data.total
 
@@ -279,7 +290,7 @@ export default {
       })
     },
     handleFilter() {
-      this.listQuery.page = 1
+      this.listQuery.pageNum = 1
       this.getList()
     },
     handleModifyStatus(row, status) {
@@ -322,10 +333,9 @@ export default {
         id: undefined,
         createTime: new Date(),
         operationTime: new Date(),
-        title: '',
+        name: undefined,
         status: 'stop',
-        imageType: '',
-        imageName: ''
+        appName: undefined
       }
     },
     handleCreate() {
@@ -374,7 +384,7 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
+        const tHeader = ['name', 'imageName', 'type', 'importance', 'status']
         const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
