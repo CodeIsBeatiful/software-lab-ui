@@ -55,12 +55,12 @@
           <el-button :type="row.runningStatus | statusTypeFilter" :icon="row.runningStatus | statusFilter" size="mini" circle />
         </template>
       </el-table-column>
-      <el-table-column label="Create Time" width="180px" align="center">
+      <el-table-column label="CREATE TIME" width="180px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.createTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Operation Time" width="180px" align="center">
+      <el-table-column label="OPERATION TIME" width="180px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.updateTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
@@ -94,21 +94,27 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="550px">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
-        <el-form-item v-if="dialogStatus==='create'" label="App Type" prop="imageType">
-          <el-select v-model="temp.imageType" @change="handleImageTypeSelectInDialog" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select">
+        <el-form-item v-if="dialogStatus==='create'" label="App Type" prop="appType">
+          <el-select v-model="temp.appType" @change="handleAppTypeSelectInDialog" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="App" prop="appName">
-          <el-select v-if="dialogStatus==='create'" v-model="temp.appName" @change="handleImageSelectInDialog" class="filter-item" placeholder="Please select">
+        <el-form-item label="App Name" prop="appName">
+          <el-select v-if="dialogStatus==='create'" v-model="temp.appName" @change="handleAppSelectInDialog" class="filter-item" placeholder="Please select">
             <el-option v-for="item in tempImages" :key="item.key" :label="item.key" :value="item.value" />
           </el-select>
           <el-input v-if="dialogStatus==='detail'" v-model="temp.appName" :disabled="true"></el-input>
-          </el-form-item>
+        </el-form-item>
+        <el-form-item label="App Version" prop="appVersion">
+          <el-select v-if="dialogStatus==='create'" v-model="temp.appVersion" @change="handleAppVersionSelectInDialog" class="filter-item" placeholder="Please select">
+            <el-option v-for="item in tempVersions" :key="item.key" :label="item.key" :value="item.value" />
+          </el-select>
+          <el-input v-if="dialogStatus==='detail'" v-model="temp.appVersion" :disabled="true"></el-input>
+        </el-form-item>
         <el-form-item label="Name" prop="name">
           <el-input v-model="temp.name" :disabled="dialogStatus==='detail'" />
         </el-form-item>
-        <el-form-item v-if="dialogStatus==='detail'" label="Additional Info" prop="additionalInfo">
+        <el-form-item label="Additional Info" prop="additionalInfo">
           <el-input v-model="temp.additionalInfo" :disabled="dialogStatus==='detail'" type="textarea" :rows="2" />
         </el-form-item>
         <el-form-item v-if="dialogStatus==='detail'" label="Create Time" prop="timestamp">
@@ -142,7 +148,7 @@
 
 <script>
 import { fetchList, createInstance, startInstance, stopInstance } from '@/api/instance'
-import { getTypes, getNamesByType } from '@/api/app'
+import { getTypes, getNamesByType, getVersionsByAppName, getVersionByAppNameAndVersion } from '@/api/app'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -198,14 +204,17 @@ export default {
       statusOptions: ['start', 'stop'],
       showReviewer: false,
       tempImages: [],
+      tempVersions: [],
       temp: {
         id: undefined,
         appName: undefined,
+        appVersion: undefined,
+        appType: undefined,
         name: undefined,
-        createTime: new Date(),
-        operationTIme: new Date(),
-        additionalInfo: '',
-        status: 'stop'
+        createTime: undefined,
+        operationTIme: undefined,
+        additionalInfo: undefined,
+        status: undefined
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -216,8 +225,9 @@ export default {
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        appName: [{ required: true, message: 'app is required', trigger: 'blur' }],
-        name: [{ required: true, message: 'name is required', trigger: 'blur' }]
+        appName: [{ required: true, message: 'app name is required', trigger: 'blur' }],
+        appVersion: [{ required: true, message: 'app version is required', trigger: 'blur' }],
+        name: [{ required: true, message: 'instance name is required', trigger: 'blur' }]
       },
       downloadLoading: false
     }
@@ -251,9 +261,12 @@ export default {
         }
       })
     },
-    handleImageTypeSelectInDialog(item) {
+    handleAppTypeSelectInDialog(item) {
       this.tempImages = []
       this.temp.appName = undefined
+      this.tempVersions = []
+      this.temp.appVersion = undefined
+      this.temp.additionalInfo = undefined
       getNamesByType(item).then(response => {
         const data = response.data
         for (let i = 0; i < data.length; i++) {
@@ -261,8 +274,22 @@ export default {
         }
       })
     },
-    handleImageSelectInDialog(item) {
-      console.log(item)
+    handleAppSelectInDialog(item) {
+      this.tempVersions = []
+      this.temp.appVersion = undefined
+      this.temp.additionalInfo = undefined
+      getVersionsByAppName(item).then(response => {
+        const data = response.data
+        for (let i = 0; i < data.length; i++) {
+          this.tempVersions.push({ 'key': data[i].version, 'value': data[i].version })
+        }
+      })
+    },
+    handleAppVersionSelectInDialog(item) {
+      this.temp.additionalInfo = undefined
+      getVersionByAppNameAndVersion(this.temp.appName, item).then(response => {
+        this.temp.additionalInfo = response.data.additionalInfo
+      })
     },
     handleImageSelect(item) {
       console.log(item)
@@ -331,11 +358,14 @@ export default {
     resetTemp() {
       this.temp = {
         id: undefined,
-        createTime: new Date(),
-        operationTime: new Date(),
+        createTime: undefined,
+        operationTime: undefined,
         name: undefined,
-        status: 'stop',
-        appName: undefined
+        status: undefined,
+        appName: undefined,
+        appVersion: undefined,
+        additionalInfo: undefined,
+        appType: undefined
       }
     },
     handleCreate() {
@@ -349,9 +379,9 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          createInstance(this.temp).then(() => {
-            this.list.unshift(this.temp)
+          // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
+          createInstance(this.temp).then((response) => {
+            this.list.unshift(response.data)
             this.dialogFormVisible = false
             this.$notify({
               title: 'Success',
@@ -384,13 +414,13 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['name', 'imageName', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
+        const tHeader = ['NAME', 'APP NAME', 'APP VERSION', 'RUNNING STATUS', 'CREATE TIME', 'OPERATION TIME']
+        const filterVal = ['name', 'appName', 'appVersion', 'runningStatus', 'createTime', 'operationTime']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'table-list'
+          filename: 'software-list'
         })
         this.downloadLoading = false
       })

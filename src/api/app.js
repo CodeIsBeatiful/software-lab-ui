@@ -14,6 +14,7 @@ export function getTypes() {
     method: 'get'
   })
 }
+
 export function getNamesByType(type) {
   return request({
     url: '/apps/names',
@@ -21,5 +22,22 @@ export function getNamesByType(type) {
     params: {
       type: type
     }
+  })
+}
+
+export function getVersionsByAppName(appName) {
+  return request({
+    url: '/appVersions?op=simple',
+    method: 'get',
+    params: {
+      name: appName
+    }
+  })
+}
+
+export function getVersionByAppNameAndVersion(appName, version) {
+  return request({
+    url: '/appVersions/' + appName + '/' + version,
+    method: 'get'
   })
 }
