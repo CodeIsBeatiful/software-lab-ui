@@ -16,6 +16,13 @@ export function createInstance(data) {
   })
 }
 
+export function removeInstance(id) {
+  return request({
+    url: '/instances/' + id,
+    method: 'delete'
+  })
+}
+
 export function startInstance(id) {
   return request({
     url: '/instanceOperation/' + id,

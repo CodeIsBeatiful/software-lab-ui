@@ -147,7 +147,7 @@
 </template>
 
 <script>
-import { fetchList, createInstance, startInstance, stopInstance } from '@/api/instance'
+import { fetchList, createInstance, removeInstance, startInstance, stopInstance } from '@/api/instance'
 import { getTypes, getNamesByType, getVersionsByAppName, getVersionByAppNameAndVersion } from '@/api/app'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
@@ -403,13 +403,15 @@ export default {
       })
     },
     handleDelete(row, index) {
-      // this.$notify({
-      //   title: 'Success',
-      //   message: 'Delete Successfully',
-      //   type: 'success',
-      //   duration: 2000
-      // })
-      // this.list.splice(index, 1)
+      removeInstance(row.id).then((response) => {
+        this.list.splice(index, 1)
+        this.$notify({
+          title: 'Success',
+          message: 'Delete Successfully',
+          type: 'success',
+          duration: 2000
+        })
+      })
     },
     handleDownload() {
       this.downloadLoading = true
