@@ -34,7 +34,7 @@
 <!--          <span>{{ row.id }}</span>-->
 <!--        </template>-->
 <!--      </el-table-column>-->
-      <el-table-column label="NAME" min-width="100px" align="center">
+      <el-table-column label="NAME" prop="name" sortable="custom" min-width="100px" align="center" :class-name="getSortClass('name')">
         <template slot-scope="{row}">
           <span class="link-type" @click="handleDetail(row)">{{ row.name }}</span>
         </template>
@@ -50,7 +50,7 @@
           <span>{{ row.appVersion }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="RUNNING STATUS" class-name="status-col" width="100">
+      <el-table-column label="RUNNING STATUS" prop="runningStatus" sortable="custom" width="100" :class-name="getSortClass('runningStatus')">
         <template slot-scope="{row}">
           <el-button :type="row.runningStatus | statusTypeFilter" :icon="row.runningStatus | statusFilter" size="mini" circle />
         </template>
@@ -60,7 +60,7 @@
           <span>{{ row.createTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="OPERATION TIME" width="180px" align="center">
+      <el-table-column label="OPERATION TIME" prop="updateTime" sortable="custom" width="180px" align="center" :class-name="getSortClass('updateTime')">
         <template slot-scope="{row}">
           <span>{{ row.updateTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
@@ -196,11 +196,10 @@ export default {
         image: undefined,
         imageType: undefined,
         name: undefined,
-        sort: '+id'
+        sort: undefined
       },
       calendarTypeOptions: [],
       calendarTypeKeyValue: {},
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['start', 'stop'],
       showReviewer: false,
       tempImages: [],
@@ -343,15 +342,35 @@ export default {
     },
     sortChange(data) {
       const { prop, order } = data
-      if (prop === 'id') {
-        this.sortByID(order)
+      if (prop === 'name') {
+        this.sortByName(order)
+      } else if (prop === 'runningStatus') {
+        this.sortByRunningStatus(order)
+      } else if (prop === 'updateTime') {
+        this.sortByUpdateTime(order)
       }
     },
-    sortByID(order) {
+    sortByName(order) {
       if (order === 'ascending') {
-        this.listQuery.sort = '+id'
+        this.listQuery.sort = '+name'
       } else {
-        this.listQuery.sort = '-id'
+        this.listQuery.sort = '-name'
+      }
+      this.handleFilter()
+    },
+    sortByRunningStatus(order) {
+      if (order === 'ascending') {
+        this.listQuery.sort = '+runningStatus'
+      } else {
+        this.listQuery.sort = '-runningStatus'
+      }
+      this.handleFilter()
+    },
+    sortByUpdateTime(order) {
+      if (order === 'ascending') {
+        this.listQuery.sort = '+updateTime'
+      } else {
+        this.listQuery.sort = '-updateTime'
       }
       this.handleFilter()
     },
