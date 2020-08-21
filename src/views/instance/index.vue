@@ -94,6 +94,9 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="550px">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="Name" prop="name">
+          <el-input v-model="temp.name" :disabled="dialogStatus==='detail'" />
+        </el-form-item>
         <el-form-item v-if="dialogStatus==='create'" label="App Type" prop="appType">
           <el-select v-model="temp.appType" @change="handleAppTypeSelectInDialog" :disabled="dialogStatus==='detail'" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />
@@ -111,12 +114,21 @@
           </el-select>
           <el-input v-if="dialogStatus==='detail'" v-model="temp.appVersion" :disabled="true"></el-input>
         </el-form-item>
-        <el-form-item label="Name" prop="name">
-          <el-input v-model="temp.name" :disabled="dialogStatus==='detail'" />
-        </el-form-item>
-        <el-form-item label="Additional Info" prop="additionalInfo">
-          <el-input v-model="temp.additionalInfo" :disabled="dialogStatus==='detail'" type="textarea" :rows="2" />
-        </el-form-item>
+        <template v-if="temp.additionalInfo.imageName">
+          <el-form-item label="Image Name">
+            <el-input v-model="temp.additionalInfo.imageName" :disabled="true" />
+          </el-form-item>
+        </template>
+        <template v-for="portSetting in temp.additionalInfo.ports">
+          <el-form-item :key="portSetting.port" label="Port Mapping">
+            <el-switch v-model="portSetting.autoGen" active-color="#13ce66" inactive-color="#ff4949" />
+            <el-input v-model="portSetting.targetPort" :disabled="portSetting.autoGen" style="width:200px;font-size: 0.8em">
+              <template slot="prepend">{{portSetting.type}}</template>
+              <template slot="append">:{{portSetting.port}}</template>
+            </el-input>
+<!--            <i v-if="portSetting.entrance" class="el-icon-info"></i>-->
+          </el-form-item>
+        </template>
         <el-form-item v-if="dialogStatus==='detail'" label="Create Time" prop="timestamp">
           <el-date-picker v-model="temp.createTime" :disabled="dialogStatus==='detail'" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
@@ -212,7 +224,7 @@ export default {
         name: undefined,
         createTime: undefined,
         operationTIme: undefined,
-        additionalInfo: undefined,
+        additionalInfo: { },
         status: undefined
       },
       dialogFormVisible: false,
@@ -265,7 +277,7 @@ export default {
       this.temp.appName = undefined
       this.tempVersions = []
       this.temp.appVersion = undefined
-      this.temp.additionalInfo = undefined
+      this.temp.additionalInfo = {}
       getNamesByType(item).then(response => {
         const data = response.data
         for (let i = 0; i < data.length; i++) {
@@ -276,7 +288,7 @@ export default {
     handleAppSelectInDialog(item) {
       this.tempVersions = []
       this.temp.appVersion = undefined
-      this.temp.additionalInfo = undefined
+      this.temp.additionalInfo = {}
       getVersionsByAppName(item).then(response => {
         const data = response.data
         for (let i = 0; i < data.length; i++) {
@@ -285,9 +297,14 @@ export default {
       })
     },
     handleAppVersionSelectInDialog(item) {
-      this.temp.additionalInfo = undefined
+      this.temp.additionalInfo = {}
       getVersionByAppNameAndVersion(this.temp.appName, item).then(response => {
-        this.temp.additionalInfo = response.data.additionalInfo
+        this.temp.additionalInfo = JSON.parse(response.data.additionalInfo)
+        if (this.temp.additionalInfo) {
+          this.temp.additionalInfo.ports.forEach(portSetting => {
+            this.$set(portSetting, 'autoGen', true)
+          })
+        }
       })
     },
     handleImageSelect(item) {
@@ -383,7 +400,7 @@ export default {
         status: undefined,
         appName: undefined,
         appVersion: undefined,
-        additionalInfo: undefined,
+        additionalInfo: { },
         appType: undefined
       }
     },
@@ -399,6 +416,16 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
+          // todo process(this.temp)
+          // process portSetting to string
+          const additionalInfo = this.temp.additionalInfo
+          const portSettings = additionalInfo.ports
+          const ports = []
+          portSettings.forEach(portSetting => {
+            ports.push(portSetting.targetPort ? portSetting.targetPort : '' + ':' + portSetting.port)
+          })
+          additionalInfo.ports = ports
+          this.temp.additionalInfo = JSON.stringify(this.temp.additionalInfo)
           createInstance(this.temp).then((response) => {
             this.list.unshift(response.data)
             this.dialogFormVisible = false

@@ -9,6 +9,7 @@ export function fetchList(query) {
 }
 
 export function createInstance(data) {
+  // TODO data 进行处理转换为containerInfo
   return request({
     url: '/instances',
     method: 'post',
