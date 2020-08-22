@@ -50,7 +50,7 @@
           <span>{{ row.appVersion }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="RUNNING STATUS" prop="runningStatus" sortable="custom" width="100" :class-name="getSortClass('runningStatus')">
+      <el-table-column label="RUNNING STATUS" prop="runningStatus" align="center" sortable="custom" width="100" :class-name="getSortClass('runningStatus')">
         <template slot-scope="{row}">
           <el-button :type="row.runningStatus | statusTypeFilter" :icon="row.runningStatus | statusFilter" size="mini" circle />
         </template>
@@ -120,13 +120,22 @@
           </el-form-item>
         </template>
         <template v-for="portSetting in temp.additionalInfo.ports">
-          <el-form-item :key="portSetting.port" label="Port Mapping">
-            <el-switch v-model="portSetting.autoGen" active-color="#13ce66" inactive-color="#ff4949" />
-            <el-input v-model="portSetting.targetPort" :disabled="portSetting.autoGen" style="width:200px;font-size: 0.8em">
+          <el-form-item :key="portSetting.port" :label="portSetting.entrance | portSettingLabelFilter">
+            <el-switch v-if="dialogStatus==='create'" v-model="portSetting.autoGen" active-color="#13ce66" inactive-color="#ff4949"/>
+            <el-input v-model="portSetting.targetPort" :disabled="portSetting.autoGen || dialogStatus==='detail'" style="width:205px;font-size: 0.7em" >
               <template slot="prepend">{{portSetting.type}}</template>
               <template slot="append">:{{portSetting.port}}</template>
             </el-input>
+<!--            <el-input v-if="dialogStatus==='detail'" v-model="portSetting.targetPort" :disabled="dialogStatus==='detail'" style="width:200px;font-size: 0.8em" >-->
+<!--              <template slot="prepend">{{portSetting.type}}</template>-->
+<!--              <template slot="append">:{{portSetting.port}}</template>-->
+<!--            </el-input>-->
 <!--            <i v-if="portSetting.entrance" class="el-icon-info"></i>-->
+          </el-form-item>
+        </template>
+        <template v-if="temp.additionalInfo.url">
+          <el-form-item label="Entrance Url">
+            <el-input v-model="temp.additionalInfo.url" :disabled="true" />
           </el-form-item>
         </template>
         <el-form-item v-if="dialogStatus==='detail'" label="Create Time" prop="timestamp">
@@ -193,6 +202,13 @@ export default {
     },
     typeFilter(type) {
       return this.calendarTypeKeyValue[type]
+    },
+    portSettingLabelFilter(entrance) {
+      if (entrance) {
+        return 'Port Mapping(E)'
+      } else {
+        return 'Port Mapping'
+      }
     }
   },
   data() {
@@ -416,15 +432,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          // todo process(this.temp)
-          // process portSetting to string
-          const additionalInfo = this.temp.additionalInfo
-          const portSettings = additionalInfo.ports
-          const ports = []
-          portSettings.forEach(portSetting => {
-            ports.push(portSetting.targetPort ? portSetting.targetPort : '' + ':' + portSetting.port)
-          })
-          additionalInfo.ports = ports
+          // format to json string
           this.temp.additionalInfo = JSON.stringify(this.temp.additionalInfo)
           createInstance(this.temp).then((response) => {
             this.list.unshift(response.data)
@@ -441,6 +449,7 @@ export default {
     },
     handleDetail(row) {
       this.temp = Object.assign({}, row) // copy obj
+      this.temp.additionalInfo = JSON.parse(this.temp.additionalInfo)
       this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'detail'
       this.dialogFormVisible = true
