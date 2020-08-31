@@ -5,7 +5,7 @@
       <el-col :span="24">
         <el-divider content-position="left">ALL</el-divider>
       </el-col>
-      <el-col v-for="app in list" :key="app.id" :span="6">
+      <el-col v-for="app in list" :key="app.name" :span="6">
         <div class="grid-content bg-purple-light">
           <div class="store-app-logo">
             <img :src="'/api/files/logo/'+app.name" style="width: 96px;height: 96px;margin: 5px; border-radius: 10px;">
@@ -14,8 +14,18 @@
             <p class="store-app-desc-p">{{ app.name }}</p>
             <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em;">{{ app.description | ellipsis }}</p>
             <p>
-              <el-button type="primary" size="small" :disabled="app.isCollect" @click="showDialog($event, app.id)">收藏</el-button>
-              <el-button icon="el-icon-star-off" size="small" plain>{{ app.stars }}</el-button>
+              <el-button icon="el-icon-info" type="primary" size="small" :disabled="app.isCollect" @click="showDialog($event, app.name)">detail</el-button>
+                <el-dropdown size="small" trigger="click" split-button @visible-change="handleDownloadDropdownChange($event,app.name)" @command="requestDownload(app.name,$event)">
+                  Download
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item disabled>Choose Version</el-dropdown-item>
+                  <template v-for="version in appVersions">
+                    <el-dropdown-item :command="version.version" :disabled="version.downloadStatus === 2" :key="version.version" :icon=" version.downloadStatus | downloadIconFilter">
+                      {{version.version}}
+                    </el-dropdown-item>
+                  </template>
+                </el-dropdown-menu>
+              </el-dropdown>
             </p>
           </div>
         </div>
@@ -41,27 +51,36 @@
 <!--        </div>-->
 <!--      </el-col>-->
 <!--    </el-row>-->
-    <el-dialog title="提示" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
-      <span>确定将{{ curApp.name }}加入到收藏夹吗？</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-        <el-button @click="dialogVisible = false">取 消</el-button>
-      </span>
+    <el-dialog title="Tips" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
+      <h4>{{ curApp.name }}</h4>
+      <span>{{curApp.description }}</span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getList } from '@/api/app'
+import { getList, getVersionsByAppName } from '@/api/app'
+import { getToken } from '@/utils/auth'
 
 export default {
   filters: {
     ellipsis(value) {
       if (!value) return ''
-      if (value.length > 12) {
-        return value.slice(0, 12) + '...'
+      if (value.length > 30) {
+        return value.slice(0, 30) + '...'
       }
       return value
+    },
+    downloadIconFilter(downloadStatus) {
+      if (downloadStatus === 2) {
+        return 'el-icon-check'
+      } else if (downloadStatus === 1) {
+        return 'el-icon-loading'
+      } else if (downloadStatus === 0) {
+        return 'el-icon-download'
+      } else {
+        return ''
+      }
     }
   },
   data() {
@@ -69,11 +88,27 @@ export default {
       dialogVisible: false,
       list: null,
       listLoading: true,
-      curApp: {}
+      curApp: {},
+      appVersions: [],
+      socket: null,
+      token: getToken()
     }
   },
   created() {
     this.fetchData()
+  },
+  mounted() {
+    // todo port need read from config
+    this.socket = new WebSocket(`ws://127.0.0.1:8080/api/ws/message?token=${this.token}`)
+    var that = this
+    this.socket.addEventListener('message', function(event) {
+      that.$notify({
+        title: 'Success',
+        message: event.data,
+        type: 'success',
+        duration: 2000
+      })
+    })
   },
   methods: {
     fetchData() {
@@ -86,21 +121,37 @@ export default {
         this.listLoading = false
       })
     },
-    findData(id) {
+    findData(name) {
       for (let i = 0; i < this.list.length; ++i) {
-        if (this.list[i].id === id) {
+        if (this.list[i].name === name) {
           return this.list[i]
         }
       }
       return null
     },
-
     handleClose(done) {
       done()
     },
-    showDialog(event, id) {
+    showDialog(event, name) {
       this.dialogVisible = true
-      this.curApp = this.findData(id)
+      this.curApp = this.findData(name)
+    },
+    handleDownloadDropdownChange(flag, name) {
+      if (flag) {
+        getVersionsByAppName(name).then(response => {
+          this.appVersions = response.data
+        })
+      } else {
+        this.appVersions = []
+      }
+    },
+    requestDownload(app, version) {
+      // todo
+      this.socket.send(JSON.stringify({
+        type: 'image',
+        operate: 'download',
+        content: app + ':' + version
+      }))
     }
   }
 }
