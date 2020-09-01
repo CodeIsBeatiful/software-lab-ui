@@ -83,7 +83,7 @@
       </el-table-column>
       <el-table-column v-if="showReviewer" label="Terminal" width="110px" align="center">
         <template slot-scope="{row}">
-          <el-link v-if="row.runningStatus==1" target="_blank" :href="'#/terminal/terminal?id='+ row.id" style="height: 2em">
+          <el-link v-if="row.runningStatus===1" target="_blank" :href="'#/terminal/terminal?id='+ row.id" style="height: 2em">
             <svg-icon icon-class="command" style="width: 2em; height: 2em" />
           </el-link>
         </template>
@@ -126,11 +126,12 @@
               <template slot="prepend">{{portSetting.type}}</template>
               <template slot="append">:{{portSetting.port}}</template>
             </el-input>
-<!--            <el-input v-if="dialogStatus==='detail'" v-model="portSetting.targetPort" :disabled="dialogStatus==='detail'" style="width:200px;font-size: 0.8em" >-->
-<!--              <template slot="prepend">{{portSetting.type}}</template>-->
-<!--              <template slot="append">:{{portSetting.port}}</template>-->
-<!--            </el-input>-->
-<!--            <i v-if="portSetting.entrance" class="el-icon-info"></i>-->
+          </el-form-item>
+        </template>
+        <template v-for="envSetting in temp.additionalInfo.envs">
+          <el-form-item :key="envSetting.key" :label="envSetting.label">
+            <el-input v-model="envSetting.value" :disabled="dialogStatus==='detail'" style="width:205px;font-size: 0.7em" >
+            </el-input>
           </el-form-item>
         </template>
         <template v-if="temp.additionalInfo.url">
@@ -433,6 +434,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          // todo envs check
           // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
           // format to json string
           this.temp.additionalInfo = JSON.stringify(this.temp.additionalInfo)
