@@ -2,6 +2,8 @@
  * Created by PanJiaChen on 16/11/18.
  */
 
+import { devServer } from '../../vue.config'
+
 /**
  * Parse the time to string
  * @param {(Object|string|number)} time
@@ -281,4 +283,18 @@ export function removeClass(ele, cls) {
     const reg = new RegExp('(\\s|^)' + cls + '(\\s|$)')
     ele.className = ele.className.replace(reg, ' ')
   }
+}
+/**
+ * Remove class from element
+ * @param {HTMLElement} elm
+ * @param {string} cls
+ */
+export function getAddress() {
+  let address = ''
+  if (process.env.NODE_ENV === 'development') {
+    address = devServer.proxy['/api'].target.substring(7)
+  } else {
+    address = window.location.hostname
+  }
+  return address
 }

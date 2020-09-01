@@ -61,6 +61,7 @@
 <script>
 import { getList, getVersionsByAppName } from '@/api/app'
 import { getToken } from '@/utils/auth'
+import { getAddress } from '@/utils'
 
 export default {
   filters: {
@@ -98,8 +99,7 @@ export default {
     this.fetchData()
   },
   mounted() {
-    // todo port need read from config
-    this.socket = new WebSocket(`ws://127.0.0.1:8080/api/ws/message?token=${this.token}`)
+    this.socket = new WebSocket('ws://' + getAddress() + `/api/ws/message?token=${this.token}`)
     var that = this
     this.socket.addEventListener('message', function(event) {
       that.$notify({

@@ -308,7 +308,9 @@ export default {
       getVersionsByAppName(item).then(response => {
         const data = response.data
         for (let i = 0; i < data.length; i++) {
-          this.tempVersions.push({ 'key': data[i].version, 'value': data[i].version })
+          if (data[i].downloadStatus === 2) {
+            this.tempVersions.push({ 'key': data[i].version, 'value': data[i].version })
+          }
         }
       })
     },
