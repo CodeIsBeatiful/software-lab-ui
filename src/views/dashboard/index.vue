@@ -11,20 +11,20 @@
             <div class="card-panel-text">
               OS
             </div>
-            <p class="card-panel-num">macos 15.06</p>
+            <span class="card-panel-num">{{os.name}}</span>
           </div>
         </div>
       </el-col>
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
         <div class="card-panel">
-          <div class="card-panel-icon-wrapper icon-os">
-            <svg-icon icon-class="os" class-name="card-panel-icon" />
+          <div class="card-panel-icon-wrapper icon-software">
+            <svg-icon icon-class="app" class-name="card-panel-icon" />
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">
               App Total
             </div>
-            <count-to :start-val="0" :end-val="2367" :duration="2600" class="card-panel-num" />
+            <count-to :start-val="0" :end-val="software.appTotal" :duration="2600" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -35,9 +35,9 @@
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">
-               Instance Total
+              Instance Total
             </div>
-            <count-to :start-val="0" :end-val="15" :duration="2600" class="card-panel-num" />
+            <count-to :start-val="0" :end-val="software.instanceTotal" :duration="2600" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -50,7 +50,7 @@
             <div class="card-panel-text">
               Running Instance
             </div>
-            <count-to :start-val="0" :end-val="5" :duration="2600" class="card-panel-num" />
+            <count-to :start-val="0" :end-val="software.runningInstanceTotal" :duration="2600" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -65,13 +65,7 @@
 import { mapGetters } from 'vuex'
 import LineChart from '@/views/dashboard/components/LineChart'
 import CountTo from 'vue-count-to'
-
-const lineChartData = {
-  newVisitis: {
-    expectedData: [['2012-03-01 05:06:00', 100], ['2012-03-01 05:06:05', 120], ['2012-03-01 05:06:10', 161], ['2012-03-01 05:06:15', 134]],
-    actualData: [['2012-03-01 05:06:00', 140], ['2012-03-01 05:06:05', 130], ['2012-03-01 05:06:10', 111], ['2012-03-01 05:06:15', 198]]
-  }
-}
+import { getHardwareHistory, getHardwareLast, getOs, getSoftware } from '@/api/dashboard'
 
 export default {
   name: 'Dashboard',
@@ -83,13 +77,57 @@ export default {
   },
   data() {
     return {
-      lineChartData: lineChartData.newVisitis
+      os: { },
+      software: { },
+      lineChartData: {
+        expectedData: [],
+        actualData: []
+      }
     }
   },
+  created() {
+    getOs().then(response => {
+      this.os = response.data
+    })
+    getSoftware().then(response => {
+      this.software = response.data
+    })
+    const that = this
+    getHardwareHistory().then(response => {
+      const data = response.data
+      if (data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+          const cpu = data[i].cpu
+          const memory = data[i].memory
+          const ts = data[i].ts
+          that.lineChartData.expectedData.push([ts, cpu])
+          that.lineChartData.actualData.push([ts, memory])
+          if (that.lineChartData.expectedData.length > 50) {
+            that.lineChartData.expectedData.shift()
+          }
+          if (that.lineChartData.actualData.length > 50) {
+            that.lineChartData.actualData.shift()
+          }
+        }
+      }
+    })
+    setInterval(function() {
+      getHardwareLast().then(response => {
+        const cpu = response.data.cpu
+        const memory = response.data.memory
+        const ts = response.data.ts
+        that.lineChartData.expectedData.push([ts, cpu])
+        that.lineChartData.actualData.push([ts, memory])
+        if (that.lineChartData.expectedData.length > 50) {
+          that.lineChartData.expectedData.shift()
+        }
+        if (that.lineChartData.actualData.length > 50) {
+          that.lineChartData.actualData.shift()
+        }
+      })
+    }, 3000)
+  },
   methods: {
-    handleSetLineChartData(type) {
-      this.lineChartData = lineChartData[type]
-    }
   }
 }
 </script>

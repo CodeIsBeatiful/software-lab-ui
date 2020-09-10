@@ -88,6 +88,7 @@ export default {
           axisTick: {
             show: false
           }
+
         },
         legend: {
           data: ['CPU', 'MEMORY']
@@ -102,6 +103,7 @@ export default {
               }
             }
           },
+          symbolSize: 10,
           smooth: true,
           type: 'line',
           data: expectedData,
@@ -110,6 +112,7 @@ export default {
         },
         {
           name: 'MEMORY',
+          symbolSize: 10,
           smooth: true,
           type: 'line',
           itemStyle: {

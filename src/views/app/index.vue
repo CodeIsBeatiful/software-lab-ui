@@ -1,6 +1,24 @@
 <template>
   <div class="store-container">
-
+    <div class="filter-container">
+<!--      <el-select v-model="listQuery.imageType" @change="handleImageTypeSelect" placeholder="APP TYPE" clearable class="filter-item" style="width: 130px">-->
+<!--        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />-->
+<!--      </el-select>-->
+<!--      <el-autocomplete v-model="listQuery.image" class="filter-item" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="APP NAME" @select="handleImageSelect" />-->
+<!--      <el-input v-model="listQuery.name" placeholder="KEYWORD" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />-->
+<!--      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">-->
+<!--        QUERY-->
+<!--      </el-button>-->
+<!--      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">-->
+<!--        ADD-->
+<!--      </el-button>-->
+<!--      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">-->
+<!--        EXPORT-->
+<!--      </el-button>-->
+<!--      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">-->
+<!--        ADVANCED-->
+<!--      </el-checkbox>-->
+    </div>
     <el-row :gutter="20">
       <el-col :span="24">
         <el-divider content-position="left">ALL</el-divider>
