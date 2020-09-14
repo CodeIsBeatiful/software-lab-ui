@@ -271,7 +271,7 @@ export default {
     imageQuerySearch(queryString, cb) {
       const images = this.images
       const results = queryString ? images.filter(this.createImageFilter(queryString)) : images
-      // 调用 callback 返回建议列表的数据
+      // callback data list
       cb(results)
     },
     createImageFilter(queryString) {

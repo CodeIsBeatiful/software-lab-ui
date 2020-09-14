@@ -50,7 +50,7 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: '仪表盘', icon: 'dashboard' }
+      meta: { title: 'Dashboard', icon: 'dashboard' }
     }]
   },
   {
@@ -61,7 +61,7 @@ export const constantRoutes = [
         path: 'app',
         name: 'App',
         component: () => import('@/views/app/index'),
-        meta: { title: '商店', icon: 'app' }
+        meta: { title: 'AppStore', icon: 'app' }
       }
     ]
   },
@@ -85,7 +85,7 @@ export const constantRoutes = [
         path: 'instance',
         name: 'Instance',
         component: () => import('@/views/instance/index'),
-        meta: { title: '实例', icon: 'instance' }
+        meta: { title: 'Instance', icon: 'instance' }
       }
     ]
   },
@@ -98,7 +98,7 @@ export const constantRoutes = [
         path: 'terminal',
         name: 'terminal',
         component: () => import('@/views/terminal/index'),
-        meta: { title: '终端', icon: 'command' }
+        meta: { title: 'Terminal', icon: 'command' }
       }
     ]
   },
