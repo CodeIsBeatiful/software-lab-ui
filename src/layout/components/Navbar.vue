@@ -120,8 +120,9 @@ export default {
 
         .user-avatar {
           cursor: pointer;
-          width: 40px;
-          height: 40px;
+          margin-top: 5px;
+          width: 30px;
+          height: 30px;
           border-radius: 10px;
         }
 

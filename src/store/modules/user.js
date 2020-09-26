@@ -56,7 +56,7 @@ const actions = {
         const { username } = data
 
         commit('SET_NAME', username)
-        commit('SET_AVATAR', 'http://localhost:9528/app/admin.png')
+        commit('SET_AVATAR', '/app/admin.png')
         resolve(data)
       }).catch(error => {
         reject(error)
