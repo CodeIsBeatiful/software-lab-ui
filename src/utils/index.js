@@ -295,6 +295,9 @@ export function getAddress() {
     address = devServer.proxy['/api'].target.substring(7)
   } else {
     address = window.location.hostname
+    if (window.location.port.length > 0) {
+      address += ':' + window.location.port
+    }
   }
   return address
 }
