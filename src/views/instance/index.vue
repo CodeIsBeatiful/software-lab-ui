@@ -94,6 +94,11 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="550px">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
+        <template v-if="temp.additionalInfo.home">
+          <el-form-item label="Home Page">
+            <el-link type="primary" :href="temp.additionalInfo.home" target="_blank">{{temp.additionalInfo.home}}</el-link>
+          </el-form-item>
+        </template>
         <el-form-item label="Name" prop="name">
           <el-input v-model="temp.name" :disabled="dialogStatus==='detail'" />
         </el-form-item>
@@ -132,11 +137,6 @@
           <el-form-item :key="envSetting.key" :label="envSetting.label">
             <el-input v-model="envSetting.value" :disabled="dialogStatus==='detail'" style="width:205px;font-size: 0.7em" >
             </el-input>
-          </el-form-item>
-        </template>
-        <template v-if="temp.additionalInfo.url">
-          <el-form-item label="Entrance Url">
-            <el-input v-model="temp.additionalInfo.url" :disabled="true" />
           </el-form-item>
         </template>
         <el-form-item v-if="dialogStatus==='detail'" label="Create Time" prop="timestamp">
