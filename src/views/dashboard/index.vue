@@ -110,24 +110,27 @@ export default {
           }
         }
       }
+      this.hardwareInterval = setInterval(function() {
+        getHardwareLast().then((response) => {
+          const cpu = response.data.cpu
+          const memory = response.data.memory
+          const ts = response.data.ts
+          that.lineChartData.expectedData.push([ts, cpu])
+          that.lineChartData.actualData.push([ts, memory])
+          if (that.lineChartData.expectedData.length > 50) {
+            that.lineChartData.expectedData.shift()
+          }
+          if (that.lineChartData.actualData.length > 50) {
+            that.lineChartData.actualData.shift()
+          }
+        })
+      }, 3000)
     })
-    setInterval(function() {
-      getHardwareLast().then(response => {
-        const cpu = response.data.cpu
-        const memory = response.data.memory
-        const ts = response.data.ts
-        that.lineChartData.expectedData.push([ts, cpu])
-        that.lineChartData.actualData.push([ts, memory])
-        if (that.lineChartData.expectedData.length > 50) {
-          that.lineChartData.expectedData.shift()
-        }
-        if (that.lineChartData.actualData.length > 50) {
-          that.lineChartData.actualData.shift()
-        }
-      })
-    }, 3000)
   },
   methods: {
+  },
+  beforeDestroy() {
+    clearInterval(this.hardwareInterval)
   }
 }
 </script>
