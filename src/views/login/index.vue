@@ -41,11 +41,9 @@
         </span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
-
-      <div class="tips">
-        <span style="margin-right:20px;">用户名: admin</span>
-        <span> 密码: any</span>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <div class="tips" v-show="tipsVisible">
+        Create an <el-link type="primary" @click="handleRegisterAdmin">Administrator</el-link> for the first use
       </div>
 
     </el-form>
@@ -83,7 +81,9 @@ export default {
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
+      dialogVisible: false,
+      tipsVisible: false
     }
   },
   watch: {
@@ -93,6 +93,9 @@ export default {
       },
       immediate: true
     }
+  },
+  created() {
+    this.checkAdministrator()
   },
   methods: {
     showPwd() {
@@ -120,6 +123,13 @@ export default {
           return false
         }
       })
+    },
+    checkAdministrator() {
+      // if exist
+      this.tipsVisible = false
+    },
+    handleRegisterAdmin() {
+      this.dialogVisible = true
     }
   }
 }
