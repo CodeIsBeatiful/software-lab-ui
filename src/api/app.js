@@ -8,6 +8,13 @@ export function getList(params) {
   })
 }
 
+export function getTop(number) {
+  return request({
+    url: '/apps/top/' + number,
+    method: 'get'
+  })
+}
+
 export function getTypes() {
   return request({
     url: '/appTypes',
@@ -17,11 +24,8 @@ export function getTypes() {
 
 export function getNamesByType(type) {
   return request({
-    url: '/apps/names',
-    method: 'get',
-    params: {
-      type: type
-    }
+    url: '/apps/names/' + type,
+    method: 'get'
   })
 }
 

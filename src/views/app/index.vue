@@ -1,27 +1,47 @@
 <template>
   <div class="store-container">
     <div class="filter-container">
-<!--      <el-select v-model="listQuery.imageType" @change="handleImageTypeSelect" placeholder="APP TYPE" clearable class="filter-item" style="width: 130px">-->
-<!--        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />-->
-<!--      </el-select>-->
-<!--      <el-autocomplete v-model="listQuery.image" class="filter-item" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="APP NAME" @select="handleImageSelect" />-->
-<!--      <el-input v-model="listQuery.name" placeholder="KEYWORD" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />-->
-<!--      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">-->
-<!--        QUERY-->
-<!--      </el-button>-->
-<!--      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">-->
-<!--        ADD-->
-<!--      </el-button>-->
-<!--      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">-->
-<!--        EXPORT-->
-<!--      </el-button>-->
-<!--      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">-->
-<!--        ADVANCED-->
-<!--      </el-checkbox>-->
+      <!--      <el-select v-model="listQuery.imageType" @change="handleImageTypeSelect" placeholder="APP TYPE" clearable class="filter-item" style="width: 130px">-->
+      <!--        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.key" :value="item.value" />-->
+      <!--      </el-select>-->
+      <!--      <el-autocomplete v-model="listQuery.image" class="filter-item" style="width: 200px" :fetch-suggestions="imageQuerySearch" placeholder="APP NAME" @select="handleImageSelect" />-->
+      <!--      <el-input v-model="listQuery.name" placeholder="KEYWORD" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />-->
+      <!--      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">-->
+      <!--        QUERY-->
+      <!--      </el-button>-->
+      <!--      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">-->
+      <!--        ADD-->
+      <!--      </el-button>-->
+      <!--      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">-->
+      <!--        EXPORT-->
+      <!--      </el-button>-->
+      <!--      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">-->
+      <!--        ADVANCED-->
+      <!--      </el-checkbox>-->
     </div>
     <el-row :gutter="20">
       <el-col :span="24">
-        <el-divider content-position="left">ALL</el-divider>
+        <el-divider content-position="left"><svg-icon icon-class="hot"></svg-icon></el-divider>
+      </el-col>
+      <el-col v-for="app in topList" :key="app.name" :span="6">
+        <div class="grid-content bg-purple-light">
+          <div class="store-app-logo">
+            <img :src="'data:image/png;base64,'+app.logo" style="width: 96px;height: 96px;margin: 5px; border-radius: 10px;">
+          </div>
+          <div class="store-app-desc">
+            <p class="store-app-desc-p">
+              {{ app.name }} <el-button size="mini" round type="success">{{ app.usedCount }}</el-button>
+            </p>
+            <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em; width: 200px">{{ app.description | ellipsis(100) }}</p>
+            <p>
+            </p>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row :gutter="20">
+      <el-col :span="24">
+        <el-divider content-position="left"><svg-icon icon-class="app"></svg-icon></el-divider>
       </el-col>
       <el-col v-for="app in list" :key="app.name" :span="6">
         <div class="grid-content bg-purple-light">
@@ -33,13 +53,13 @@
             <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em;">{{ app.description | ellipsis }}</p>
             <p>
               <el-button icon="el-icon-info" type="primary" size="small" :disabled="app.isCollect" @click="showDialog($event, app.name)">detail</el-button>
-                <el-dropdown size="small" trigger="click" split-button @visible-change="handleDownloadDropdownChange($event,app.name)" @command="requestDownload(app.name,$event)">
-                  Download
+              <el-dropdown size="small" trigger="click" split-button @visible-change="handleDownloadDropdownChange($event,app.name)" @command="requestDownload(app.name,$event)">
+                Download
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item disabled>Choose Version</el-dropdown-item>
                   <template v-for="version in appVersions">
-                    <el-dropdown-item :command="version.version" :disabled="version.downloadStatus === 2" :key="version.version" :icon=" version.downloadStatus | downloadIconFilter">
-                      {{version.version}}
+                    <el-dropdown-item :key="version.version" :command="version.version" :disabled="version.downloadStatus === 2" :icon=" version.downloadStatus | downloadIconFilter">
+                      {{ version.version }}
                     </el-dropdown-item>
                   </template>
                 </el-dropdown-menu>
@@ -49,44 +69,27 @@
         </div>
       </el-col>
     </el-row>
-<!--    <el-row :gutter="20">-->
-<!--      <el-col :span="24">-->
-<!--        <el-divider content-position="left">DataBase</el-divider>-->
-<!--      </el-col>-->
-<!--      <el-col v-for="app in list" :key="app.id" :span="6">-->
-<!--        <div class="grid-content bg-purple-light">-->
-<!--          <div class="store-app-logo">-->
-<!--            <svg-icon icon-class="example" style="width: 96px;height: 96px;margin: 5px;" />-->
-<!--          </div>-->
-<!--          <div class="store-app-desc">-->
-<!--            <p class="store-app-desc-p">{{ app.name }}</p>-->
-<!--            <p class="store-app-desc-p" style="color: #5a5a5a;font-size: 0.8em;">{{ app.description | ellipsis }}</p>-->
-<!--            <p>-->
-<!--              <el-button type="primary" size="small" :disabled="app.isCollect" @click="showDialog($event, app.id)">收藏</el-button>-->
-<!--              <el-button icon="el-icon-star-off" size="small" plain>{{ app.stars }}</el-button>-->
-<!--            </p>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </el-col>-->
-<!--    </el-row>-->
     <el-dialog title="Tips" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
       <h4>{{ curApp.name }}</h4>
-      <span>{{curApp.description }}</span>
+      <span>{{ curApp.description }}</span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getList, getVersionsByAppName } from '@/api/app'
+import { getTop, getList, getVersionsByAppName } from '@/api/app'
 import { getToken } from '@/utils/auth'
 import { getAddress } from '@/utils'
 
 export default {
   filters: {
-    ellipsis(value) {
+    ellipsis(value, length) {
+      if (length === undefined) {
+        length = 23
+      }
       if (!value) return ''
-      if (value.length > 30) {
-        return value.slice(0, 30) + '...'
+      if (value.length > length) {
+        return value.slice(0, length) + '...'
       }
       return value
     },
@@ -106,6 +109,7 @@ export default {
     return {
       dialogVisible: false,
       list: null,
+      topList: null,
       listLoading: true,
       curApp: {},
       appVersions: [],
@@ -131,10 +135,12 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
+      getTop(10).then(response => {
+        this.topList = response.data
+      })
       getList({
-        'pageNum': 0,
-        'pageSize': 10
-      }).then(response => {
+        pageNum: 0,
+        pageSize: 10 }).then(response => {
         this.list = response.data.records
         this.listLoading = false
       })
